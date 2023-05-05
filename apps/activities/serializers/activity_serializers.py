@@ -13,6 +13,7 @@ class ActivitySerializers(serializers.ModelSerializer):
         fields = [
             "id",
             "tanggal",
+            "waktu",
             "judul",
             "deskripsi",
             "prioritas",
