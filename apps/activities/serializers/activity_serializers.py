@@ -4,7 +4,7 @@ from apps.activities.models import Activity
 
 
 class ActivitySerializers(serializers.ModelSerializer):
-    asign = serializers.ListField(
+    asignees = serializers.ListField(
         child=serializers.CharField(max_length=100), required=False
     )
 
