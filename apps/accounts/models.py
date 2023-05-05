@@ -12,6 +12,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     pkid = models.BigAutoField(primary_key=True, editable=False)
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email = models.EmailField(verbose_name="Email", db_index=True, unique=True)
+    username = models.CharField(
+        verbose_name="Username", default="Pegawai", max_length=225
+    )
     is_staff = models.BooleanField(default=False)
     is_team_lead = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -19,7 +22,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["password"]
+    REQUIRED_FIELDS = ["username", "password"]
 
     objects = CustomUserManager()
 

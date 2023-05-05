@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, time, date
 from django.db import models
+from django.utils import timezone
 from apps.common.models import TimeStampedUUIDModel
 from django.utils.translation import gettext_lazy as _
 
@@ -12,7 +13,10 @@ class Activity(TimeStampedUUIDModel):
         MEDIUM = "medium", _("medium")
         HIGH = "high", _("high")
 
-    tanggal = models.DateTimeField(verbose_name=_("tanggal"), default=datetime.now)
+    tanggal = models.DateField(verbose_name=_("tanggal"), default=timezone.now().date())
+    waktu = models.TimeField(
+        verbose_name=_("waktu"), default=datetime.now().strftime("%H:%M:%S")
+    )
     judul = models.CharField(verbose_name=_("judul"), max_length=225)
     deskripsi = models.TextField(verbose_name=_("deskripsi"))
     prioritas = models.CharField(
@@ -38,8 +42,13 @@ class Activity(TimeStampedUUIDModel):
         default=labels.PERSONAL,
         max_length=15,
     )
-    asign = models.CharField(
-        verbose_name=_("asign"), max_length=225, default=None, blank=True, null=True
+
+    # asign = models.ManyToManyField
+    asignees = models.ManyToManyField(
+        "accounts.User",
+        verbose_name=_("assigned users"),
+        related_name="assigned_activities",
+        blank=True,
     )
 
     class Meta:

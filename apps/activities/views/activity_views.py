@@ -27,7 +27,7 @@ class ActivityListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ActivitySerializers
 
     def create(self, request):
-        # user = request.user
+        user = request.user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
