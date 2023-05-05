@@ -4,21 +4,20 @@ from apps.activities.models import Activity
 
 
 class ActivitySerializers(serializers.ModelSerializer):
-    asignees = serializers.ListField(
-        child=serializers.CharField(max_length=100), required=False
-    )
+    # asign = serializers.ListField(
+    #     child=serializers.CharField(max_length=100), required=False
+    # )
 
     class Meta:
         model = Activity
         fields = [
             "id",
             "tanggal",
-            "waktu",
             "judul",
             "deskripsi",
             "prioritas",
             "label",
-            "asignees",
+            "asign",
         ]
 
     def create(self, validated_data):
@@ -53,7 +52,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
             "deskripsi",
             "prioritas",
             "label",
-            "asignees",
+            "asign",
             "created_at",
         ]
 
