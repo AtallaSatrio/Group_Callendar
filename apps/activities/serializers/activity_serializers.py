@@ -18,13 +18,13 @@ class ActivitySerializers(serializers.ModelSerializer):
             "deskripsi",
             "prioritas",
             "label",
-            "asign",
+            "asignees",
         ]
 
     def create(self, validated_data):
-        asign = validated_data.pop("asign", [])
+        # asign = validated_data.pop("asign", [])
         obj_activity = Activity.objects.create(**validated_data)
-        obj_activity.asign = asign
+        # obj_activity.asign = asign
         obj_activity.save()
         return obj_activity
 
@@ -53,7 +53,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
             "deskripsi",
             "prioritas",
             "label",
-            "asign",
+            "asignees",
             "created_at",
         ]
 
