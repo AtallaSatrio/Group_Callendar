@@ -3,10 +3,15 @@ from django.db import models
 from apps.common.models import TimeStampedUUIDModel
 from django.utils.translation import gettext_lazy as _
 
-# Create your models here.
-
 
 class Activity(TimeStampedUUIDModel):
+    creator = models.ForeignKey(
+        "accounts.User",
+        verbose_name=_("creator"),
+        related_name="creator_activity",
+        on_delete=models.CASCADE,
+    )
+
     class Priority(models.TextChoices):
         LOW = "low", _("low")
         MEDIUM = "medium", _("medium")
@@ -24,12 +29,6 @@ class Activity(TimeStampedUUIDModel):
         default=Priority.MEDIUM,
         max_length=15,
     )
-    # creator = models.ForeignKey(
-    #     "accounts.User",
-    #     verbose_name=_("creator"),
-    #     related_name="creator_activity",
-    #     on_delete=models.CASCADE,
-    # )
 
     class labels(models.TextChoices):
         PERSONAL = "personal", _("personal")
@@ -42,8 +41,11 @@ class Activity(TimeStampedUUIDModel):
         max_length=15,
     )
 
-    asign = models.TextField(
-        verbose_name=_("asign"), max_length=225, default=None, blank=True, null=True
+    asignees = models.ManyToManyField(
+        "accounts.User",
+        verbose_name=_("assigned users"),
+        related_name="assigned_activities",
+        blank=True,
     )
 
     class Meta:

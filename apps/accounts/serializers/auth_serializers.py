@@ -11,31 +11,33 @@ from django.conf import settings
 from apps.accounts.models import User
 
 
+class UserGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("pkid", "id", "email", "username")
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
     default_error_messages = {
-        "email_taken": _("This email address is already in use."),
+        "email_taken": _("This email is already in use"),
     }
 
     class Meta:
         model = User
-        fields = ("nip", "email", "username", "password", "confirm_password")
+        fields = ("email", "username", "password", "confirm_password")
 
     def validate(self, data):
         if data["password"] != data["confirm_password"]:
-            raise serializers.ValidationError("password does not match")
+            raise serializers.ValidationError("Password does not match")
         return data
 
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                self.error_messages["email is already taken"]
-            )
-        return value
+    def validate_email(self, data):
+        if User.objects.filter(email=data).exists():
+            raise serializers.ValidationError("Email already used")
+        return data
 
     def create(self, validated_data):
         validated_data.pop("confirm_password", None)
@@ -44,11 +46,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(TokenObtainPairSerializer):
-    nip = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
     default_error_messages = {
-        "inactive_account": _("User account is disabled."),
+        "inactive_account": _("Employee account is disabled"),
         "invalid_credentials": _("Unable to login with provided credentials"),
     }
 
@@ -57,7 +59,9 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         self.user = None
 
     def validate(self, attrs):
-        self.user = authenticate(nip=attrs.get("nip"), password=attrs.get("password"))
+        self.user = authenticate(
+            email=attrs.get("email"), password=attrs.get("password")
+        )
 
         if self.user:
             if not self.user.is_active:
@@ -75,7 +79,6 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         life_time = int(refresh.access_token.lifetime.total_seconds())
         response = {
             "id": self.user.id,
-            "nip": self.user.nip,
             "email": self.user.email,
             "token": {
                 "access": str(refresh.access_token),

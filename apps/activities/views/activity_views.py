@@ -1,4 +1,6 @@
 from rest_framework import generics, status
+from apps.accounts.models import User
+from rest_framework.permissions import IsAuthenticated
 
 # from rest_framework.permissions import IsAuthenticated
 from apps.activities.serializers.activity_serializers import (
@@ -25,16 +27,19 @@ from rest_framework.decorators import api_view
 
 class ActivityListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ActivitySerializers
+    permission_classes = [IsAuthenticated]
 
     def create(self, request):
-        user = request.user
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(
+            data=request.data, context={"user": request.user}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request):
-        data = self.get_queryset()
+        print(request.user)
+        data = Activity.objects.filter(asignees=request.user)
 
         serialzer = ActivitySerializers(data, many=True)
 

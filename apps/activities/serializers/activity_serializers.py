@@ -1,12 +1,14 @@
 from datetime import timezone
 from rest_framework import serializers
+from apps.accounts.models import User
 from apps.activities.models import Activity
 
 
 class ActivitySerializers(serializers.ModelSerializer):
-    # asign = serializers.ListField(
+    # asignees = serializers.ListField(
     #     child=serializers.CharField(max_length=100), required=False
     # )
+    asignees = serializers.ListField(child=serializers.UUIDField(), required=False)
 
     class Meta:
         model = Activity
@@ -17,15 +19,31 @@ class ActivitySerializers(serializers.ModelSerializer):
             "deskripsi",
             "prioritas",
             "label",
-            "asign",
+            # "creator",
+            "asignees",
         ]
 
     def create(self, validated_data):
-        # asign = validated_data.pop("asign", [])
-        obj_activity = Activity.objects.create(**validated_data)
+        user = self.context.get("user")
+        print(user)
+        validated_data["creator"] = user
+        asignees = validated_data.pop("asignees", [])
+        print(asignees)
+
+        if asignees is not None:
+            for asignee in asignees:
+                obj_activity = Activity.objects.create(**validated_data)
+
+                for user in asignees:
+                    obj_activity.asignees.add(User.objects.get(id=user))
+
+        activity_copy = Activity.objects.create(**validated_data)
+        for user in asignees:
+            activity_copy.asignees.add(User.objects.get(id=user))
+        # KALAU MAU GET ACTIVITY BERDASARKAN ID BISA PAKE ACTIVITY.ASIGNEES.FILTER(USER)
         # obj_activity.asign = asign
-        obj_activity.save()
-        return obj_activity
+        # obj_activity.save()
+        return activity_copy
 
     def update(self, instance, validated_data):
         judul = validated_data.get("judul")
@@ -39,6 +57,19 @@ class ActivitySerializers(serializers.ModelSerializer):
         activity_instance.save()
 
         return activity_instance
+
+    def to_representation(self, instance):
+        user_id = []
+        for user in instance.asignees.all():
+            user_id.append(user.username)
+        return {
+            "id": instance.id,
+            "judul": instance.judul,
+            "deskripsi": instance.deskripsi,
+            "prioritas": instance.prioritas,
+            "label": instance.label,
+            "asignees": user_id,
+        }
 
 
 class ActivityListSerializer(serializers.ModelSerializer):
